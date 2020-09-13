@@ -1,6 +1,5 @@
 import numpy as np 
 import scipy 
-from matplotlib import pyplot
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -61,9 +60,10 @@ class expm:
         # (exponential map) maps the special Euclidian algebra (or 'generator') se3 to the special Euclidian group SE3:
         # g: se3 --> SE3, i.e. velocity (twist) configuration space.
         # Returns a homogeneous matrix 
+        norm_w = np.linalg.norm(w, 2)
         SO3 = expm.so3_TO_SO3(skew(w), dT)
         ind_1_1 = SO3
-        ind_1_2 = np.dot((np.identity(3) - SO3), np.dot((skew(w)), v)) + np.dot(np.dot(w, (np.dot(w.T, v))), dT)
+        ind_1_2 = np.dot((np.identity(3) - SO3), np.dot((skew(w) / norm_w), v)) + np.dot(np.dot(w / norm_w, (np.dot(w.T, v))), dT)
         ind_2_1 = np.zeros((1, 3))
         ind_2_2 = np.identity(1)
         ind_1 = np.concatenate((ind_1_1, ind_1_2), axis = 1)
