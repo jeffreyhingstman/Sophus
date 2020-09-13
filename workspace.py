@@ -9,12 +9,16 @@ H_initB = Soph.Rp2hom(np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), np.array([[3]
 newBodyA = Vis.newRigidBody("newBodyA", H_initA)
 newBodyB = Vis.newRigidBody("newBodyB", H_initB)
 
-# run the application
-sim = Vis.RigidBodySimulation()
+listOfBodies = []
+n = 1
+while n < 30:
+    x = Vis.newRigidBody("obj_{}".format(n), H_initA * n)
+    n += 1
 
-# run application
+# instantiate the simulation and run it
+sim = Vis.RigidBodySimulation()
 try: sim.run()
-except SystemExit: print("Exited app")
+except SystemExit: print("Closed simulation")
 
 # do some plotting of angles
 #plt.plot( np.arange(len(app.H_arr)), app.H_arr)

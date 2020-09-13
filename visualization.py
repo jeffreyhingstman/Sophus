@@ -13,10 +13,7 @@ from scipy.spatial.transform import Rotation as Rot
 from panda3d.core import Quat
 
 mydir = os.path.abspath(sys.path[0])
-
-# Convert that to panda's unix-style notation.
 mydir = Filename.fromOsSpecific(mydir).getFullpath()
-print("mdir: ", mydir)
 
 Global_RigidBodies = []
 
