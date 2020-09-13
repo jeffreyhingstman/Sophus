@@ -57,12 +57,13 @@ class expm:
         return np.identity(3) + (w_skew / norm_w) * np.sin(norm_w * theta) + ((w_skew / norm_w)**2) * (1 - np.cos(norm_w * theta))
 
     @classmethod
-    def se3_2_SO3(self, w, v, theta):
-        # (exponential map) maps the special Euclidian algebra (or 'generator') se3 to the special Euclidian group SE3 ->      g: se3 --> SE3.
-        # i.e. velocity space to configuration space 
-        SO3 = expm.so3_TO_SO3(skew(w), theta)
+    def se3_TO_SE3(self, w, v, dT):
+        # (exponential map) maps the special Euclidian algebra (or 'generator') se3 to the special Euclidian group SE3:
+        # g: se3 --> SE3, i.e. velocity (twist) configuration space.
+        # Returns a homogeneous matrix 
+        SO3 = expm.so3_TO_SO3(skew(w), dT)
         ind_1_1 = SO3
-        ind_1_2 = np.dot((np.identity(3) - SO3), np.dot((skew(w)), v)) + np.dot(np.dot(w, (np.dot(w.T, v))), theta)
+        ind_1_2 = np.dot((np.identity(3) - SO3), np.dot((skew(w)), v)) + np.dot(np.dot(w, (np.dot(w.T, v))), dT)
         ind_2_1 = np.zeros((1, 3))
         ind_2_2 = np.identity(1)
         ind_1 = np.concatenate((ind_1_1, ind_1_2), axis = 1)
@@ -124,11 +125,11 @@ class RigidBody():
         self.v0 = v0 # initial velocity in body frame
         self.Im = Im # inertial matrix
 
-class Twist():
-    def __init__(self, fromCoord, toCoord, wrt):
-        self.fromCoord  = fromCoord
-        self.toCoord    = toCoord
-        self.wrt        = wrt 
+#class Twist(): ToDo
+#    def __init__(self, fromCoord, toCoord, wrt):
+#        self.fromCoord  = fromCoord
+#        self.toCoord    = toCoord
+#        self.wrt        = wrt 
     
         
 
