@@ -50,7 +50,7 @@ def homog_inv(R, p):
 class expm:
     # class of exponential mapping methods 
     @classmethod
-    def so3_2_SO3(self, w_skew, theta):
+    def so3_TO_SO3(self, w_skew, theta):
         # returns the exponential map using Rodrigues' formula, Has a 3x3 matrix as input, mapping so3-->SO(3), i.e. group of rotations
         # the magnitude of w_skew is normalized with the 2-norm.
         norm_w = np.linalg.norm(w_skew, 2)
@@ -60,7 +60,7 @@ class expm:
     def se3_2_SO3(self, w, v, theta):
         # (exponential map) maps the special Euclidian algebra (or 'generator') se3 to the special Euclidian group SE3 ->      g: se3 --> SE3.
         # i.e. velocity space to configuration space 
-        SO3 = Expm.so3(skew(w), theta)
+        SO3 = expm.so3_TO_SO3(skew(w), theta)
         ind_1_1 = SO3
         ind_1_2 = np.dot((np.identity(3) - SO3), np.dot((skew(w)), v)) + np.dot(np.dot(w, (np.dot(w.T, v))), theta)
         ind_2_1 = np.zeros((1, 3))
@@ -113,8 +113,7 @@ class Screw:
         ind_2 =  np.zeros((1, 4))
         return np.concatenate((ind_1, ind_2), axis = 0)
     
-    def BodyVel2Twist(BodyVel):
-        
+    def BodyVel2Twist(self, BodyVel):
         return 0
 
 class RigidBody():

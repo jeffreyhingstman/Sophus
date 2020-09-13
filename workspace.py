@@ -7,7 +7,7 @@ w_skew = Soph.skew(w)
 v = np.array([[1, 0, 0]]).T
 theta = 3.141592 
 
-expm = Soph.Expm.so3(Soph.skew(w), theta)
+expm = Soph.expm.so3_TO_SO3(Soph.skew(w), theta)
 #print("se3: ", Expm.se3(w, v, theta))
 #print("pitch h: ", Screw.pitch(w, v))
 #print("axis l: ", Screw.axis(w, v, 2))
