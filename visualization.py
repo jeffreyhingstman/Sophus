@@ -26,9 +26,7 @@ class RigidBodySimulation(ShowBase):
         self.p_arr = []
         self.r_arr = []
         self.Timestep = 0.01
-        self.origin = None
-
-        self.newOrigin()
+        self.newOrigin()    # instantiate a (0,0,0) coordinate frame by default
 
         # add the list of rigid body object to the list of tasks
         for rb in Global_RigidBodies:

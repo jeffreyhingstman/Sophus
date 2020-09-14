@@ -9,11 +9,6 @@ H_initB = Soph.Rp2hom(np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), np.array([[3]
 newBodyA = Vis.newRigidBody("newBodyA", H_initA)
 newBodyB = Vis.newRigidBody("newBodyB", H_initB)
 
-listOfBodies = []
-n = 1
-while n < 30:
-    x = Vis.newRigidBody("obj_{}".format(n), H_initA * n)
-    n += 1
 
 # instantiate the simulation and run it
 sim = Vis.RigidBodySimulation()
