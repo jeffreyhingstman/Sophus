@@ -1,17 +1,25 @@
 import numpy as np
-import SophusLibrary as Soph
-import visualization as Vis
+import SophusLibrary as Lib
+import Sophus as Soph
 
-H_initA = Soph.Rp2hom(np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), np.array([[1], [1], [1]])) 
-H_initB = Soph.Rp2hom(np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), np.array([[3], [3], [3]])) 
+H_orig  = Lib.I4x4()
+
+
+H_initA = Lib.Rp_TO_Hom(Lib.I3x3(), Lib.I3_1())
+
+H_initB = Lib.Rp_TO_Hom(Lib.I3x3(), Lib.I3_1() * 4)
+
+
+
 
 #define the rigid bodies
-newBodyA = Vis.newRigidBody("newBodyA", H_initA)
-newBodyB = Vis.newRigidBody("newBodyB", H_initB)
+Origin = Soph.Origin("Origin")
+BodyA = Soph.RigidBody("newBodyA", H_initA, Origin, w = Lib.vec3(2, 1, 0) , v = Lib.vec3(2, 2, 0))
+#BodyB = Soph.RigidBody("newBodyB", H_initB, BodyA, w = Lib.vec3(0.00001, 0, 0) , v = Lib.vec3(0.000001, 0, 0))
 
 
-# instantiate the simulation and run it
-sim = Vis.RigidBodySimulation()
+# instantiate the simulation and run it#
+sim = Soph.RigidBodySimulation()
 try: sim.run()
 except SystemExit: print("Closed simulation")
 
