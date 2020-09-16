@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 #todo: add zeta and zeta_hat for twist coordinates and homogeneous representation
 
+
 def I4x4(): 
     return np.eye(4)
 def I3x3(): 
@@ -47,7 +48,7 @@ def Rp_TO_Hom(R, p):
     # Rotation + translation point to homogeneous matrix
     return concat_2x2(R, p, np.zeros((1, 3)), np.identity(1))
 
-def Rp_TO_Hom_Inv(R, p):
+def Rp_TO_HomInv(R, p):
     # return the 4x4 inverse homogeneous matrix of a rotation matrix R and translation vector p
     return concat_2x2(R.T, np.dot(-R.T, p), np.zeros((1, 3)), np.identity(1))
 
@@ -73,7 +74,7 @@ class expm:
         ind_1_1 = SO3
         ind_1_2 = np.dot((I - SO3), np.dot((w_skw_n), v)) + np.dot(np.dot(w_n, (np.dot(w_n.T, v))), dT)
         ind_2_1 = np.zeros((1, 3))
-        ind_2_2 = np.identity(1)
+        ind_2_2 = np.array([[1]])
         ind_1 = np.concatenate((ind_1_1, ind_1_2), axis = 1)
         ind_2 = np.concatenate((ind_2_1, ind_2_2), axis = 1)
         return np.concatenate((ind_1, ind_2), axis = 0)
@@ -123,6 +124,7 @@ class Screw:
         return np.concatenate((ind_1, ind_2), axis = 0)
     
     def BodyVel2Twist(self, BodyVel):
+        #ToDo
         return 0
 
 

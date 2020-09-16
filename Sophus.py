@@ -16,7 +16,6 @@ mydir = os.path.abspath(sys.path[0])
 mydir = Filename.fromOsSpecific(mydir).getFullpath()
 
 Global_RigidBodies  = []
-#Global_Twists       = []
 
 class RigidBodySimulation(ShowBase):
     def __init__(self):
@@ -59,16 +58,15 @@ class RigidBody():
     def solve(self, task):
         # based on current calue of H_body, calculate the homogeneous coordinates in the next step 
         # via the 4x4 exponential map.
-        self.H_base = self.objH_base.H_body
         expm = Soph.expm.se3_TO_SE3(self.w_body, self.v_body, self.timestep)
-        self.H_body = np.dot(expm, self.H_body)
+        self.H_body =  self.H_body @ expm # update value of H_body w.r.t. previous time step
 
-        self.H_abs = np.dot(self.H_body,  self.H_base)
+        self.H_abs = self.objH_base.H_abs @ self.H_body
         RotMat, p = Soph.Hom_TO_Rp(self.H_abs)
         R = Rot.from_matrix(RotMat)
         quat = R.as_quat()
+        self.body.setQuat(Quat(quat[3], quat[0], quat[1], quat[2]))
         self.body.setPos(p[0], p[1], p[2])
-        self.body.setQuat(Quat(quat[0], quat[1], quat[2], quat[3]))
         return Task.cont
         
     def returnEuler(self, task):
@@ -77,7 +75,8 @@ class RigidBody():
 class Origin(RigidBody):
     def __init__(self, name):
         self.name = name
-        self.H_base = Soph.Rp_TO_Hom(np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), np.array([[0], [0], [0]]))
-        self.H_body = Soph.Rp_TO_Hom(np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), np.array([[0], [0], [0]]))
+        self.H_base = Soph.I4x4()
+        self.H_abs = Soph.I4x4()
+        self.H_body = Soph.I4x4()
         self.body = None   # leave empty, later to be filled in by task manager 
         Global_RigidBodies.append(self)
