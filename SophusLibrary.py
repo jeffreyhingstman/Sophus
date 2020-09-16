@@ -40,15 +40,15 @@ def concat_2x2(ind_1_1, ind_1_2, ind_2_1, ind_2_2):
     ind_2 = np.concatenate((ind_2_1, ind_2_2), axis = 1)
     return np.concatenate((ind_1, ind_2), axis = 0)
 
-def Hom_TO_Rp(H):
+def h2rp(H):
     # homogeneous matrix to rotation (R) + translation point (p)=
     return np.take(H, [0, 1, 2], 1)[0:3], np.take(H, [3], 1)[0:3] 
 
-def Rp_TO_Hom(R, p):
+def rp2h(R, p):
     # Rotation + translation point to homogeneous matrix
     return concat_2x2(R, p, np.zeros((1, 3)), np.identity(1))
 
-def Rp_TO_HomInv(R, p):
+def rp2hInv(R, p):
     # return the 4x4 inverse homogeneous matrix of a rotation matrix R and translation vector p
     return concat_2x2(R.T, np.dot(-R.T, p), np.zeros((1, 3)), np.identity(1))
 
@@ -62,7 +62,7 @@ class expm:
         return np.identity(3) + (w_skew / norm_w) * np.sin(norm_w * theta) + (np.dot((w_skew / norm_w), (w_skew / norm_w))) * (1 - np.cos(norm_w * theta))
 
     @classmethod
-    def se3_TO_SE3(self, w, v, dT):
+    def SE3_TO_SE3(self, H, w, v, dT):
         # (exponential map) maps the special Euclidian algebra (or 'generator') se3 to the special Euclidian group SE3:
         # g: se3 --> SE3, i.e. velocity (twist) configuration space.
         # Returns a homogeneous matrix 
@@ -75,9 +75,13 @@ class expm:
         ind_1_2 = np.dot((I - SO3), np.dot((w_skw_n), v)) + np.dot(np.dot(w_n, (np.dot(w_n.T, v))), dT)
         ind_2_1 = np.zeros((1, 3))
         ind_2_2 = np.array([[1]])
-        ind_1 = np.concatenate((ind_1_1, ind_1_2), axis = 1)
-        ind_2 = np.concatenate((ind_2_1, ind_2_2), axis = 1)
-        return np.concatenate((ind_1, ind_2), axis = 0)
+        ind_1   = np.concatenate((ind_1_1, ind_1_2), axis = 1)
+        ind_2   = np.concatenate((ind_2_1, ind_2_2), axis = 1)
+        H_exp   = Hmatrix(np.concatenate((ind_1, ind_2), axis = 0), H.low, H.upp)
+        # return the mapping from the given initial Hmatrix, to the product with the exponential mapping, such that expm(w,v, dT): se3->SE3
+        # and thus H * expm(w,v, dT) : SE3 --> SE3
+        print("performing exponential map")
+        return (H_exp * H)
 
 class Screw:
     # class of screw theory method functions 
@@ -129,7 +133,50 @@ class Screw:
 
 
         
+class tensor():
+    def __init__(self, mat, low, upp):
+        self.mat = mat
+        self.low = low
+        self.upp = upp
 
+    def __mul__(self, other):
+        """
+        Overload the multiply operator to perform tensor multiplication. 
+        Definition: H^k_i = H^k_j * H^j_i
+        Returns a tensor (be it e.g. rotation, homogeneous etc..)
+        """
+        if self.low != other.upp:
+            print("Warning: Invld mapping, non-matching coordinate frames '{}' and '{}'".format(other.upp, self.low))
+        return Hmatrix(self.mat @ other.mat, other.low, self.upp)
+
+    def info(self):
+        """
+        Return status info about tensor 
+        """
+        print("Homogeneous matrix from '{}' to '{}'".format(self.low, self.upp)) 
+
+
+class Rmatrix(tensor):
+    """
+    Rotation matrix, i.e. 3x3 tensor
+    """
+    def __init__(self, R, low, upp):
+        self.mat      = R
+        self.low    = low
+        self.upp    = upp  
+    def default(self):
+        return Hmatrix(I3x3(), 'def', 'def')
+
+class Hmatrix(tensor):
+    """
+    Homogeneous matrix, i.e. 4x4 tensor
+    """
+    def __init__(self, H, low, upp):
+        self.mat    = H
+        self.low    = low
+        self.upp    = upp  
+    def default(self):
+        return Hmatrix(I4x4(), 'def', 'def')
     
 
 class adjoint:

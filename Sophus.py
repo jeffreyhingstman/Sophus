@@ -1,7 +1,7 @@
 from math import pi, sin, cos
 import os
 import sys
-import SophusLibrary as Soph
+import SophusLibrary as Lib
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -33,36 +33,34 @@ class RigidBodySimulation(ShowBase):
             rb.body.setScale(0.5, 0.5, 0.5)
             rb.body.reparentTo(self.render)
 
-class Twist:
-    def __init__(self, w, v): 
-        self.w = w  # angular velocity vector
-        self.v = v  # linear velocity vector
-
-    #def __mul__(source, dest):
-    #    return np.dot(1, 1) 
-
 
 class RigidBody():
     def __init__(self, name, H_init, objH_base, w, v): 
         self.name = name
+        self.H_base = Lib.Hmatrix.default(self)
         self.objH_base = objH_base
         self.H_body = H_init
         self.w_body = w   # angular part of the twist
         self.v_body = v   # linear part of the twist
         self.timestep = 0.01
         self.body = None   # leave empty, later to be filled in by task manager 
-        self.H_abs = None
+        self.H_abs = Lib.Hmatrix.default(self)
         Global_RigidBodies.append(self)
 
 
     def solve(self, task):
+        self.H_base = self.objH_base.H_abs
         # based on current calue of H_body, calculate the homogeneous coordinates in the next step 
         # via the 4x4 exponential map.
-        expm = Soph.expm.se3_TO_SE3(self.w_body, self.v_body, self.timestep)
-        self.H_body =  self.H_body @ expm # update value of H_body w.r.t. previous time step
+        self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, self.w_body, self.v_body, self.timestep)
 
-        self.H_abs = self.objH_base.H_abs @ self.H_body
-        RotMat, p = Soph.Hom_TO_Rp(self.H_abs)
+        #calculate the h-matrix as a product of its internal mapping and the base coordinat frame
+        print("Base upp: ", self.H_base.upp)
+        print("Body low: ", self.H_body.low)
+
+        self.H_abs =     self.H_body * self.H_base # ToDo: implement with inverse hom. coordinates? mapping back to world observer?????
+
+        RotMat, p = Lib.h2rp(self.H_abs.mat)
         R = Rot.from_matrix(RotMat)
         quat = R.as_quat()
         self.body.setQuat(Quat(quat[3], quat[0], quat[1], quat[2]))
@@ -75,8 +73,8 @@ class RigidBody():
 class Origin(RigidBody):
     def __init__(self, name):
         self.name = name
-        self.H_base = Soph.I4x4()
-        self.H_abs = Soph.I4x4()
-        self.H_body = Soph.I4x4()
+        self.H_base =  Lib.Hmatrix(Lib.I4x4(), "O", "O")
+        self.H_abs = Lib.Hmatrix(Lib.I4x4(), "O", "O")
+        self.H_body = Lib.Hmatrix(Lib.I4x4(), "O", "O")
         self.body = None   # leave empty, later to be filled in by task manager 
         Global_RigidBodies.append(self)
