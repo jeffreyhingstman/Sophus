@@ -150,13 +150,10 @@ class Screw:
     def BodyVel2Twist(self, BodyVel):
         #ToDo
         return 0
-
-class adjoint:
-    """ 
-    Class of mappings within se3
-    """
+ 
+class adjoint():
     @classmethod
-    def ad(self, R, p):
+    def ad(self, H):
         """
         returns the 6x6 adjoint transformation. Used to transform twists from one coordinate frame to another.
         e.g. if g_ab represents a rigid body transformation SE(3), of a body with coordinate frame B w.r.t. a fixed spatial coordinate frame A,
@@ -165,17 +162,21 @@ class adjoint:
           
         See also: ad_inv
         """
+        R, p = h2rp(H.mat)
         return concat_2x2(R, np.dot(skew(p), R), np.zeros((3,3)), R)
+    
+    def ad_mul(self, H, T):
+        R, p = h2rp(H.mat)
+        return Twist(v = R @ T.v + np.dot(skew(p), R) @ T.w, w = R @ T.w)
 
     @classmethod
     def ad_inv(self, R, p):
         return concat_2x2(R.T, np.dot(-R.T, skew(p)), np.zeros((3, 3)), R.T)
     
-    @classmethod
-    def ad_h(self, H):
-        R, p = h2rp(H.mat)
-        return Hmatrix(adjoint.ad(R, p), H.low, H.upp)
-
+    #@classmethod
+    #def ad_h(self, H):
+    #    R, p = h2rp(H.mat)
+    #    return Hmatrix(adjoint.ad(R, p), H.low, H.upp)
         
 class Tensor():
     def __init__(self, mat, low, upp):

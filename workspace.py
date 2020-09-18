@@ -10,9 +10,9 @@ H_initB = Lib.rp2h(Lib.I3x3(), Lib.I3_1())
 H1 = Lib.Hmatrix(H_initA, "O", "i")
 H2 = Lib.Hmatrix(H_initB, "i", "j")
 
-T1 = Lib.Revolute(np.array([[0],[0],[1]]), np.array([[0],[0],[1]]))
-#T2 = Lib.Revolute(np.array([[0.0],[0],[1.0]]), np.array([[10],[0],[0]]))
-T2 = Lib.Prismatic(np.array([[0],[0],[1]]))
+T1 = Lib.Revolute(np.array([[1],[0],[0]]), np.array([[1],[0],[0]]))
+T2 = Lib.Revolute(np.array([[1.0],[0],[0.0]]), np.array([[0],[1],[0]]))
+#T2 = Lib.Prismatic(np.array([[1],[0],[0]]))
 
 #define the rigid bodies
 Origin = Soph.Origin("Origin")
