@@ -37,8 +37,8 @@ class RigidBodySimulation(ShowBase):
 class RigidBody():
     def __init__(self, name, H_init, objH_base, Twist): 
         self.name = name
-        self.H_base = Lib.Hmatrix.default(self)
         self.objH_base = objH_base
+        self.H_base = self.objH_base.H_abs
         self.H_body = H_init
         self.Twist = Twist   
         self.timestep = 0.01
@@ -51,12 +51,11 @@ class RigidBody():
         self.H_base = self.objH_base.H_abs
         # based on current calue of H_body, calculate the homogeneous coordinates in the next step 
         # via the 4x4 exponential map.
-        print("self.Twist body: ", self.Twist.w)
-        print("self.Twist spacial: ", Lib.adjoint.ad_mul(self, self.H_base, self.Twist).w)
-        self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, Lib.adjoint.ad_mul(self, self.H_base, self.Twist), self.timestep)
-        
+        self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, Lib.adjoint.ad_inv_mul(self.H_body, self.Twist), self.timestep) 
+        #self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, self.Twist, self.timestep)
+
         #calculate the h-matrix as a product of its internal mapping and the base coordinat frame
-        self.H_abs =     self.H_body #* self.H_base  # ToDo: implement with inverse hom. coordinates? mapping back to world observer?????
+        self.H_abs =     self.H_body * self.H_base  # ToDo: implement with inverse hom. coordinates? mapping back to world observer?????
 
         RotMat, p = Lib.h2rp(self.H_abs.mat)
         R = Rot.from_matrix(RotMat)

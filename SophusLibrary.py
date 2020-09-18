@@ -165,18 +165,23 @@ class adjoint():
         R, p = h2rp(H.mat)
         return concat_2x2(R, np.dot(skew(p), R), np.zeros((3,3)), R)
     
+    @classmethod
     def ad_mul(self, H, T):
         R, p = h2rp(H.mat)
         return Twist(v = R @ T.v + np.dot(skew(p), R) @ T.w, w = R @ T.w)
 
     @classmethod
-    def ad_inv(self, R, p):
-        return concat_2x2(R.T, np.dot(-R.T, skew(p)), np.zeros((3, 3)), R.T)
+    def ad_inv_mul(self, H, T):
+        R, p = h2rp(H.mat)
+        #ToDo
+        return Twist(v = R.T @ T.v - (skew(R.T @ p) @ R.T @ T.w), w = R.T @ T.w)
+
+    @classmethod
+    def ad(self, H):
+        R, p = h2rp(H.mat)
+        return concat_2x2(R, -(np.dot(R.T, skew(p)), np.zeros((3,3)), R.T))
     
-    #@classmethod
-    #def ad_h(self, H):
-    #    R, p = h2rp(H.mat)
-    #    return Hmatrix(adjoint.ad(R, p), H.low, H.upp)
+    
         
 class Tensor():
     def __init__(self, mat, low, upp):
@@ -247,6 +252,6 @@ class Revolute(Twist):
 class Prismatic(Twist):
     def __init__(self, v):
         self.v = v 
-        self.w = np.array([[0.00000000001],[0],[0]])
+        self.w = np.array([[0.00000000001],[0.00000000001],[0.00000000001]])
 
 
