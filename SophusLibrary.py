@@ -175,13 +175,6 @@ class adjoint():
         R, p = h2rp(H.mat)
         #ToDo
         return Twist(v = R.T @ T.v - (skew(R.T @ p) @ R.T @ T.w), w = R.T @ T.w)
-
-    @classmethod
-    def ad(self, H):
-        R, p = h2rp(H.mat)
-        return concat_2x2(R, -(np.dot(R.T, skew(p)), np.zeros((3,3)), R.T))
-    
-    
         
 class Tensor():
     def __init__(self, mat, low, upp):

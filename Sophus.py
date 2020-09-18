@@ -45,17 +45,23 @@ class RigidBody():
         self.body = None   # leave empty, later to be filled in by task manager 
         self.H_abs = Lib.Hmatrix.default(self)
         Global_RigidBodies.append(self)
-
+        self.initialize = True
 
     def solve(self, task):
         self.H_base = self.objH_base.H_abs
         # based on current calue of H_body, calculate the homogeneous coordinates in the next step 
         # via the 4x4 exponential map.
-        self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, Lib.adjoint.ad_inv_mul(self.H_body, self.Twist), self.timestep) 
+        self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, Lib.adjoint.ad_mul(self.H_body, self.Twist), self.timestep)
         #self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, self.Twist, self.timestep)
-
         #calculate the h-matrix as a product of its internal mapping and the base coordinat frame
         self.H_abs =     self.H_body * self.H_base  # ToDo: implement with inverse hom. coordinates? mapping back to world observer?????
+
+        if self.initialize:
+            print("Name: ", self.name)
+            print("\tH_base: from '{}' to '{}'".format(self.H_base.low, self.H_base.upp))
+            print("\tH_body: from '{}' to '{}'".format(self.H_body.low, self.H_body.upp))
+            print("\tH_abs: from '{}' to '{}'".format(self.H_abs.low, self.H_abs.upp))
+            self.initialize = False
 
         RotMat, p = Lib.h2rp(self.H_abs.mat)
         R = Rot.from_matrix(RotMat)
