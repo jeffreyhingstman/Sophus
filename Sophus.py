@@ -51,7 +51,8 @@ class RigidBody():
         self.H_base = self.objH_base.H_abs
         # based on current calue of H_body, calculate the homogeneous coordinates in the next step 
         # via the 4x4 exponential map.
-        self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, Lib.adjoint.ad_mul(self.H_body, self.Twist), self.timestep)
+        TwistAd  = Lib.adjoint.ad_mul(self.H_body, self.Twist)
+        self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, TwistAd, self.timestep)
         #self.H_body = Lib.expm.SE3_TO_SE3(self.H_body, self.Twist, self.timestep)
         #calculate the h-matrix as a product of its internal mapping and the base coordinat frame
         self.H_abs =     self.H_body * self.H_base  # ToDo: implement with inverse hom. coordinates? mapping back to world observer?????

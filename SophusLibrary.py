@@ -168,13 +168,16 @@ class adjoint():
     @classmethod
     def ad_mul(self, H, T):
         R, p = h2rp(H.mat)
-        return Twist(v = R @ T.v + np.dot(skew(p), R) @ T.w, w = R @ T.w)
+        if H.low != T.low:
+            print("Adjoint error: H.low='{}' != T.low='{}'".format(H.low, T.low))
+        return Twist(v=R @ T.v + np.dot(skew(p), R) @ T.w, w=R @ T.w, low=T.low, upp=T.upp, inCoord=H.upp)
 
     @classmethod
     def ad_inv_mul(self, H, T):
         R, p = h2rp(H.mat)
-        #ToDo
-        return Twist(v = R.T @ T.v - (skew(R.T @ p) @ R.T @ T.w), w = R.T @ T.w)
+        if H.upp != T.upp:
+            print("Inverse adjoint error: H.upp='{}' != T.upp='{}'".format(H.upp, T.upp))
+        return Twist(v = R.T @ T.v - (skew(R.T @ p) @ R.T @ T.w), w = R.T @ T.w, low=T.low, upp=T.upp, inCoord=H.upp)
         
 class Tensor():
     def __init__(self, mat, low, upp):
@@ -223,9 +226,12 @@ class Hmatrix(Tensor):
     
 
 class Twist():
-    def __init__(self, v, w):
-        self.v = v 
-        self.w = w 
+    def __init__(self, v, w, low, upp, inCoord):
+        self.v  = v 
+        self.w  = w 
+        self.low        = low
+        self.upp        = upp 
+        self.inCoord    = inCoord 
 
 class Revolute(Twist):
     """
@@ -238,13 +244,21 @@ class Revolute(Twist):
 
     This accounts for a twist [v, w]
     """
-    def __init__(self, w, q):
+    def __init__(self, w, q, low, upp):
         self.v = -skew(w) @ q 
         self.w = w 
+        self.low        = low
+        self.upp        = upp 
+        self.inCoord    = low 
+        print("Initiated revolute twist: v={}, w={}".format(self.v, self.w))
 
 class Prismatic(Twist):
-    def __init__(self, v):
+    def __init__(self, v, low, upp):
         self.v = v 
         self.w = np.array([[0.00000000001],[0.00000000001],[0.00000000001]])
+        self.low        = low
+        self.upp        = upp 
+        self.inCoord    = low 
+        print("Initiated prismatic twist: v={}, w={}".format(self.v, self.w))
 
 
